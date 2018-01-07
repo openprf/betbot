@@ -1,0 +1,5 @@
+CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT, name TEXT, UNIQUE(chat_id) );
+CREATE TABLE events (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT, name TEXT, admin_id INTEGER, status INTEGER, UNIQUE(code, admin_id));
+CREATE TABLE variants (id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER, name TEXT);
+CREATE TABLE bets (id INTEGER PRIMARY KEY AUTOINCREMENT, variant_id INTEGER, user_id INTEGER, value FLOAT);
+CREATE TABLE event_info (id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER, curancy TEXT, create_time TEXT, close_bet_time TEXT, play_time TEXT);
