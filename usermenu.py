@@ -44,15 +44,15 @@ class UserMenu:
             self._set_state(STATE_SELECT_EVENT_FOR_BET)
             return MenuReturn("Choose event for bet:", self._show_event_list(ALL_EVENTS))
         elif data == CMD_CLOSE_EVENT:
-            self._set_state(STATE_SELECT_EVENT_FOR_CLOSE)
             ev_list = self.db.get_admin_events(self.info.user_id, EVENT_STATUS_CLOSED)
             if len(ev_list) > 0:
+                self._set_state(STATE_SELECT_EVENT_FOR_CLOSE)
                 return MenuReturn("Choose event for close:", make_inline(ev_list, "name", "code"))
             return MenuReturn("No Events for close!")
         elif data == CMD_PLAY_EVENT:
-            self._set_state(STATE_SELECT_EVENT_FOR_PLAY)
             ev_list = self.db.get_admin_events(self.info.user_id)
             if len(ev_list) > 0:
+                self._set_state(STATE_SELECT_EVENT_FOR_PLAY)
                 return MenuReturn("Choose event for play:", make_inline(ev_list, "name", "code"))
             return MenuReturn("No events for play")
         elif data == "info":
@@ -107,6 +107,9 @@ class UserMenu:
 
     # ---------
     def _proc_close_ev(self, data):
+        if data == CMD_CANCEL:
+            self._set_state(STATE_ROOT)
+            return MenuReturn("Play event canceled")
         self.info.event = self.db.get_event(data)
         self.db.close_event(self.info.event)
         self._set_state(STATE_ROOT)
@@ -114,6 +117,9 @@ class UserMenu:
 
     # ---------
     def _proc_play_ev(self, data):
+        if data == CMD_CANCEL:
+            self._set_state(STATE_ROOT)
+            return MenuReturn("Play event canceled")
         self.info.event = self.db.get_event(data)
         self._set_state(STATE_SELECT_WIN_VARIANT)
         return MenuReturn("Choose win variant", make_inline(self.info.event.variants, "name", "id"))
