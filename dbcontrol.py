@@ -54,6 +54,9 @@ class BotDb:
   def _add_user(self, chat_id, user_name):
     self._write("INSERT OR REPLACE INTO users (chat_id, name) VALUES( :chat_id, :user_name)", {"chat_id": chat_id, "user_name":user_name})
     return self.cursor.lastrowid
+
+  def _clear_event(self, event_id):
+      pass
     
 #-------------------------------
 #public:
@@ -145,7 +148,7 @@ class BotDb:
     
     for w in wins.keys():
       wins[w] = prize*wins[w]/win_bets
-      
+
     return wins
 
 
@@ -158,9 +161,9 @@ class BotDb:
     return events
 
 
-  def get_admin_events(self, user_id):
-    req = "SELECT name, code FROM events WHERE admin_id = :user_id"
-    res = self._read(req,{"user_id":user_id})
+  def get_admin_events(self, user_id, stop_status = EVENT_STATUS_PLAYED):
+    req = "SELECT name, code FROM events WHERE admin_id = :user_id AND status < :status"
+    res = self._read(req, {"user_id": user_id, "status": stop_status})
     events = []
     for r in res:
       events.append({"name":r[0], "code":r[1]})
@@ -186,10 +189,6 @@ class BotDb:
     bets = self.get_user_bets(user_id)
     events = self.get_user_events(user_id)
     return len(bets), len(events)
-
-
-  def clear_event(event):
-    pass
 
 
 #===================================================================
@@ -223,6 +222,7 @@ class BotDb:
 #    self._write("COMMIT TRANSACTION")
     return new_event, "OK"
 
+
   def load_event(self, event_code):
     res = self._read("SELECT id ,code, name, admin_id, status FROM events WHERE code = :code", {"code":event_code})
     if res:
@@ -231,6 +231,7 @@ class BotDb:
       for v in variants:
 	event.variants.append({"id":v[0], "name":v[1]})
       return event
+
 
   def new_bet(self, user_id, variant_id, value):
     #ret = self._read("SELECT id FROM variants WHERE id = :variant_id ", {"variant_id": variant_id})

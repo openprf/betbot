@@ -45,10 +45,16 @@ class UserMenu:
             return MenuReturn("Choose event for bet:", self._show_event_list(ALL_EVENTS))
         elif data == CMD_CLOSE_EVENT:
             self._set_state(STATE_SELECT_EVENT_FOR_CLOSE)
-            return MenuReturn("Choose event for close:", self._show_event_list())
+            ev_list = self.db.get_admin_events(self.info.user_id, EVENT_STATUS_CLOSED)
+            if len(ev_list) > 0:
+                return MenuReturn("Choose event for close:", make_inline(ev_list, "name", "code"))
+            return MenuReturn("No Events for close!")
         elif data == CMD_PLAY_EVENT:
             self._set_state(STATE_SELECT_EVENT_FOR_PLAY)
-            return MenuReturn("Choose event for play:",self._show_event_list())
+            ev_list = self.db.get_admin_events(self.info.user_id)
+            if len(ev_list) > 0:
+                return MenuReturn("Choose event for play:", make_inline(ev_list, "name", "code"))
+            return MenuReturn("No events for play")
         elif data == "info":
             self._set_state(STATE_ROOT)
             self.menutype = USER_MENU_TYPE_BASIC
