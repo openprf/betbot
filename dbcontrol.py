@@ -237,3 +237,14 @@ class BotDb:
     #ret = self._read("SELECT id FROM variants WHERE id = :variant_id ", {"variant_id": variant_id})
     #variant_id = ret[0][0]
     self._write("INSERT OR REPLACE INTO bets (user_id, variant_id, value) VALUES(:user_id, :var_id, :bet_val)", {"user_id": user_id, "var_id":variant_id, "bet_val":value})
+
+  def get_event_user_list(self, event_id):
+      req = """SELECT chat_id FROM users WHERE id IN 
+                (SELECT user_id FROM bets WHERE variant_id IN 
+                (SELECT id FROM variants WHERE event_id = :event_id))
+                GROUP BY chat_id"""
+      res = self._read(req, {"event_id": event_id})
+      chats = []
+      for r in res:
+          chats.append(r[0])
+      return chats

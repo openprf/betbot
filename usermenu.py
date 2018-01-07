@@ -84,13 +84,17 @@ class UserMenu:
         self.info.selected = data # name of variant
         return MenuReturn("Enter bet value:")
 
+
+    #STATE_SELECT_WIN_VARIANT
     def _proc_select_win_variant(self, data):
         ret = self.db.play_event(self.info.event, int(data))
         winners_str = "/winner/ : /prize/\n"
         for w in ret.keys():
           winners_str += "%s : %f\n" % (w, ret[w])
         self._set_state(STATE_ROOT)
-        return MenuReturn("Event \"%s\" played:\n%s" % (self.info.event.name, winners_str))
+        users = self.db.get_event_user_list(self.info.event.id)
+        ret_info = MenuReturn("Event \"%s\" played:\n%s" % (self.info.event.name, winners_str), addr_list=users)
+        return ret_info
 
     # ---------
     def _proc_make_bet(self, data):
@@ -105,17 +109,20 @@ class UserMenu:
             self._set_state(STATE_ROOT)
             return MenuReturn("Server problem #103")
 
-    # ---------
+    #STATE_SELECT_EVENT_FOR_CLOSE
     def _proc_close_ev(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Play event canceled")
+            return MenuReturn("Close event canceled")
         self.info.event = self.db.get_event(data)
         self.db.close_event(self.info.event)
+        users = self.db.get_event_user_list(self.info.event.id)
         self._set_state(STATE_ROOT)
-        return MenuReturn("Event \"%s\" closed for bets (admin: %s)" % (self.info.event.name, self.info.user_name))
+        ret = MenuReturn("Event \"%s\" closed for bets (admin: %s)" % (self.info.event.name, self.info.user_name),
+                         addr_list=users)
+        return ret
 
-    # ---------
+    #STATE_SELECT_EVENT_FOR_PLAY
     def _proc_play_ev(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)

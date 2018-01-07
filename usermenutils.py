@@ -10,12 +10,16 @@ def make_inline(inlist, text, callback_data):
 
 
 class MenuReturn:
-    def __init__(self, text, inline=[], event_addr=EVENT_ADDR_UNICAST, ext=""):
+    def __init__(self, text, inline=[], event_addr=EVENT_ADDR_UNICAST, ext="", addr_list=[]):
         #print "return text: ", text
         self.text= text
         self.inline = inline
         self.event_addr = event_addr
         self.ext = ext
+        self.addrs = addr_list
+        if len(self.inline) > 0 and self.ext == "":
+            self.ext = "---"
+
 
 
     def txt(self, num):

@@ -36,7 +36,31 @@ def make_kayboard(type = USER_MENU_ROOT):
 
     return keyboard
 
-@bot.message_handler (commands=['help'])
+
+#Send message to users
+def send(user, info):
+    #process multicast messages
+    if len(info.addrs)>0:
+        for chat_id in info.addrs:
+            bot.send_message(chat_id, info.text)
+    else:
+        key_board = make_kayboard(user.menutype())
+        #process unicast messages
+        if len(info.inline) == 0:
+            key_board = make_kayboard(user.menutype())
+            bot.send_message(user.info.chat_id, info.text, reply_markup=key_board)
+        else:
+            inline_kbd = types.InlineKeyboardMarkup()
+            for btn in info.inline:
+                btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
+                inline_kbd.add(btn)
+            bot.send_message(user.info.chat_id, info.text, reply_markup=inline_kbd)
+
+        if len(info.ext) > 0:
+            bot.send_message(user.info.chat_id, info.ext, reply_markup=key_board)
+
+
+@bot.message_handler (commands=['/help'])
 def helpHandler(message):
 #    helptext="in develop"
 #    bot.send_message(message.chat.id, helptext, reply_markup=make_kayboard())
@@ -51,14 +75,19 @@ def callbackHandler(call):
         message = call.message
         user = get_user(message.chat.id, message.from_user.username)
         info = user.do(call.data)
-        if len(info.inline) > 0:
-            inline_kbd = types.InlineKeyboardMarkup()
-            for btn in info.inline:
-                btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
-                inline_kbd.add(btn)
-            bot.send_message(message.chat.id, info.text, reply_markup=inline_kbd)
-        bot.send_message(message.chat.id, info.text, reply_markup=make_kayboard(user.menutype()))
+
+        send(user, info)
+
+        # if len(info.inline) > 0:
+        #     inline_kbd = types.InlineKeyboardMarkup()
+        #     for btn in info.inline:
+        #         btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
+        #         inline_kbd.add(btn)
+        #     bot.send_message(message.chat.id, info.text, reply_markup=inline_kbd)
+        # bot.send_message(message.chat.id, info.text, reply_markup=make_kayboard(user.menutype()))
+
         del_user(user, message.chat.id)
+
     elif call.inline_message_id:
         print call.inline_message_id
 
@@ -68,18 +97,21 @@ def process_msg(message):
     user = get_user(message.chat.id, message.from_user.username)
     info = user.do(message.text)
 
-    key_board = make_kayboard(user.menutype())
-    bot.send_message(message.chat.id, info.text, reply_markup=key_board)
+    send(user, info)
 
-    if len(info.inline) > 0:
-        inline_kbd = types.InlineKeyboardMarkup()
-        for btn in info.inline:
-            btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
-            inline_kbd.add(btn)
-        bot.send_message(message.chat.id, info.text, reply_markup=inline_kbd)
+    # key_board = make_kayboard(user.menutype())
+    # bot.send_message(message.chat.id, info.text, reply_markup=key_board)
+    #
+    # if len(info.inline) > 0:
+    #     inline_kbd = types.InlineKeyboardMarkup()
+    #     for btn in info.inline:
+    #         btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
+    #         inline_kbd.add(btn)
+    #     bot.send_message(message.chat.id, info.text, reply_markup=inline_kbd)
+    #
+    # if len(info.ext) > 0:
+    #     bot.send_message(message.chat.id, info.ext, reply_markup=key_board)
 
-    if len(info.ext) > 0:
-        bot.send_message(message.chat.id, info.ext, reply_markup=key_board)
     del_user(user, message.chat.id)
 
     #отправка сообщений вместе с клавиатурой
