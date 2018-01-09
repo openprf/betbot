@@ -87,14 +87,21 @@ class UserMenu:
 
     #STATE_SELECT_WIN_VARIANT
     def _proc_select_win_variant(self, data):
-        ret = self.db.play_event(self.info.event, int(data))
-        winners_str = "/winner/ : /prize/\n"
-        for w in ret.keys():
-          winners_str += "%s : %f\n" % (w, ret[w])
-        self._set_state(STATE_ROOT)
-        users = self.db.get_event_user_list(self.info.event.id)
-        ret_info = MenuReturn("Event \"%s\" played:\n%s" % (self.info.event.name, winners_str), addr_list=users)
-        return ret_info
+        if data == CMD_CANCEL:
+            self._set_state(STATE_ROOT)
+            return MenuReturn("Close event canceled")
+        try:
+            ret = self.db.play_event(self.info.event, int(data))
+            winners_str = "/winner/ : /prize/\n"
+            for w in ret.keys():
+              winners_str += "%s : %f\n" % (w, ret[w])
+            self._set_state(STATE_ROOT)
+            users = self.db.get_event_user_list(self.info.event.id)
+            ret_info = MenuReturn("Event \"%s\" played:\n%s" % (self.info.event.name, winners_str), addr_list=users)
+            return ret_info
+        except:
+            self._set_state(STATE_ROOT)
+            return MenuReturn("Server problem #105")
 
     # ---------
     def _proc_make_bet(self, data):

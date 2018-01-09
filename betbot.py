@@ -40,7 +40,7 @@ def make_kayboard(type = USER_MENU_ROOT):
 #Send message to users
 def send(user, info):
     #process multicast messages
-    if len(info.addrs)>0:
+    if len(info.addrs) > 0:
         for chat_id in info.addrs:
             bot.send_message(chat_id, info.text)
     else:
