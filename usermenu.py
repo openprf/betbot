@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from usermenutils import *
-
+from multilang import *
 
 class UserMenu:
     def __init__(self, chat_id, user_name):
         self.db = BotDb(DB_PATH)
+        self.tr = tr_eng
 
         try:  # load user infj from cache
             f = open("cache/%s.user" % chat_id, "rb")
@@ -39,10 +40,10 @@ class UserMenu:
     def _root_menu(self, data):
         if data == CMD_NEW_EVENT:
             self._set_state(STATE_ENTER_NEW_EVENT_NAME)
-            return MenuReturn("Enter event name")
+            return MenuReturn(self.tr("Enter event name"))
         elif data == "make_bet":
             self._set_state(STATE_SELECT_EVENT_FOR_BET)
-            return MenuReturn("Choose event for bet:", self._show_event_list(ALL_EVENTS))
+            return MenuReturn(self.tr("Choose event for bet:"), self._show_event_list(ALL_EVENTS))
         elif data == CMD_CLOSE_EVENT:
             ev_list = self.db.get_admin_events(self.info.user_id, EVENT_STATUS_CLOSED)
             if len(ev_list) > 0:
