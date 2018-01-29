@@ -3,9 +3,9 @@ from usermenutils import *
 from multilang import *
 
 class UserMenu:
-    def __init__(self, chat_id, user_name):
+    def __init__(self, chat_id, user_name, lang="rus"):
         self.db = BotDb(DB_PATH)
-        self.tr = tr_eng
+        self.self.menuReturn.r = MenuReturn(lang=lang)
 
         try:  # load user infj from cache
             f = open("cache/%s.user" % chat_id, "rb")
@@ -40,30 +40,30 @@ class UserMenu:
     def _root_menu(self, data):
         if data == CMD_NEW_EVENT:
             self._set_state(STATE_ENTER_NEW_EVENT_NAME)
-            return MenuReturn(self.tr("Enter event name"))
+            return self.self.menuReturn.r("Enter event name")
         elif data == "make_bet":
             self._set_state(STATE_SELECT_EVENT_FOR_BET)
-            return MenuReturn(self.tr("Choose event for bet:"), self._show_event_list(ALL_EVENTS))
+            return self.menuReturn.r("Choose event for bet:", self._show_event_list(ALL_EVENTS))
         elif data == CMD_CLOSE_EVENT:
             ev_list = self.db.get_admin_events(self.info.user_id, EVENT_STATUS_CLOSED)
             if len(ev_list) > 0:
                 self._set_state(STATE_SELECT_EVENT_FOR_CLOSE)
-                return MenuReturn("Choose event for close:", make_inline(ev_list, "name", "code"))
-            return MenuReturn("No Events for close!")
+                return self.menuReturn.r("Choose event for close:", make_inline(ev_list, "name", "code"))
+            return self.menuReturn.r("No Events for close!")
         elif data == CMD_PLAY_EVENT:
             ev_list = self.db.get_admin_events(self.info.user_id)
             if len(ev_list) > 0:
                 self._set_state(STATE_SELECT_EVENT_FOR_PLAY)
-                return MenuReturn("Choose event for play:", make_inline(ev_list, "name", "code"))
-            return MenuReturn("No events for play")
+                return self.menuReturn.r("Choose event for play:", make_inline(ev_list, "name", "code"))
+            return self.menuReturn.r("No events for play")
         elif data == "info":
             self._set_state(STATE_ROOT)
             self.menutype = USER_MENU_TYPE_BASIC
-            return MenuReturn("your info in develop")
+            return self.menuReturn.r("your info in develop")
         elif data == "menu":
             self._set_state(STATE_ROOT)
             self.menutype = USER_MENU_TYPE_BASIC
-            return MenuReturn("You are in main menu")
+            return self.menuReturn.r(self.tr("You are in main menu"))
         else:
             return self._proc_ev_for_bet(data)
         # ---------
@@ -73,24 +73,24 @@ class UserMenu:
         if self.info.event:
             if self.info.event.status == EVENT_STATUS_OPEN:
                 self._set_state(STATE_SELECT_VARIANT)
-                return MenuReturn("Choose variant", make_inline(self.info.event.variants, "name", "id"))
+                return self.menuReturn.r("Choose variant", make_inline(self.info.event.variants, "name", "id"))
             else:
-                return MenuReturn("Event closed for bets!")
+                return self.menuReturn.r("Event closed for bets!")
         else:
-            return MenuReturn("Wrong event code")
+            return self.menuReturn.r("Wrong event code")
 
     # ---------
     def _proc_select_variant(self, data):
         self._set_state(STATE_MAKE_BET)
         self.info.selected = data # name of variant
-        return MenuReturn("Enter bet value:")
+        return self.menuReturn.r("Enter bet value:")
 
 
     #STATE_SELECT_WIN_VARIANT
     def _proc_select_win_variant(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Close event canceled")
+            return self.menuReturn.r("Close event canceled")
         try:
             ret = self.db.play_event(self.info.event, int(data))
             winners_str = "/winner/ : /prize/\n"
@@ -98,35 +98,35 @@ class UserMenu:
               winners_str += "%s : %f\n" % (w, ret[w])
             self._set_state(STATE_ROOT)
             users = self.db.get_event_user_list(self.info.event.id)
-            ret_info = MenuReturn("Event \"%s\" played:\n%s" % (self.info.event.name, winners_str), addr_list=users)
+            ret_info = self.menuReturn.r("Event \"%s\" played:\n%s" % (self.info.event.name, winners_str), addr_list=users)
             return ret_info
         except:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Server problem #105")
+            return self.menuReturn.r("Server problem #105")
 
     # ---------
     def _proc_make_bet(self, data):
         try:
             check_float = float(data)
             if type(check_float) != float:
-                return MenuReturn("Server problem #104")
+                return self.menuReturn.r("Server problem #104")
             self.db.new_bet(self.info.user_id, self.info.selected, data)
             self._set_state(STATE_ROOT)
-            return MenuReturn("Bet is done")
+            return self.menuReturn.r("Bet is done")
         except TypeError:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Server problem #103")
+            return self.menuReturn.r("Server problem #103")
 
     #STATE_SELECT_EVENT_FOR_CLOSE
     def _proc_close_ev(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Close event canceled")
+            return self.menuReturn.r("Close event canceled")
         self.info.event = self.db.get_event(data)
         self.db.close_event(self.info.event)
         users = self.db.get_event_user_list(self.info.event.id)
         self._set_state(STATE_ROOT)
-        ret = MenuReturn("Event \"%s\" closed for bets (admin: %s)" % (self.info.event.name, self.info.user_name),
+        ret = self.menuReturn.r("Event \"%s\" closed for bets (admin: %s)" % (self.info.event.name, self.info.user_name),
                          addr_list=users)
         return ret
 
@@ -134,45 +134,45 @@ class UserMenu:
     def _proc_play_ev(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Play event canceled")
+            return self.menuReturn.r("Play event canceled")
         self.info.event = self.db.get_event(data)
         self._set_state(STATE_SELECT_WIN_VARIANT)
-        return MenuReturn("Choose win variant", make_inline(self.info.event.variants, "name", "id"))
+        return self.menuReturn.r("Choose win variant", make_inline(self.info.event.variants, "name", "id"))
 
     # ---------
     def _proc_enter_event_name(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Create event canceled")
+            return self.menuReturn.r("Create event canceled")
         else:
             self.info.event = BotEvent(name=data)
 #            self.info.event.name = data
             self.info.event.variants = []
             self._set_state(STATE_ENTER_VARIANTS)
-            return MenuReturn("Enter variants for %s" % data)
+            return self.menuReturn.r("Enter variants for %s" % data)
 
     # ---------
     def _proc_enter_variant(self, data):
         if data == CMD_CANCEL:
             self._set_state(STATE_ROOT)
-            return MenuReturn("Create event canceled")
+            return self.menuReturn.r("Create event canceled")
         elif data == CMD_STOP:
             if len(self.info.event.variants) < 2:
-                return MenuReturn("Enter at least 2 variants")
+                return self.menuReturn.r("Enter at least 2 variants")
             self.info.event.admin_id = self.info.user_id
             self.info.event, result = self.db.add_new_event(self.info.event)
             self._set_state(STATE_ROOT)
             if result == "OK":
-                return MenuReturn("Event create compleate!\n",
+                return self.menuReturn.r("Event create compleate!\n",
                               [{"text": "Push to make a bet", "callback_data": self.info.event.code}],
                               ext=self.info.event.code)
             else:
-                return MenuReturn("Create event FAIL %s"%result)
+                return self.menuReturn.r("Create event FAIL %s"%result)
         else:
             if data in self.info.event.variants:
-                return MenuReturn("Variant %s alredy exist!"% data)
+                return self.menuReturn.r("Variant %s alredy exist!"% data)
             self.info.event.variants.append(data)
-            return MenuReturn("Ok! another variant?")
+            return self.menuReturn.r("Ok! another variant?")
 
 
     #--------
@@ -209,7 +209,7 @@ class UserMenu:
                 return func(data)
             except AttributeError:
                 self._set_state(STATE_ROOT)
-                return MenuReturn("Server problem #101")
+                return self.menuReturn.r("Server problem #101")
         except KeyError:
             print "No sach key %d" % self.state.info.state
-            return MenuReturn("Server problem #102")
+            return self.menuReturn.r("Server problem #102")
