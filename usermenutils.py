@@ -1,5 +1,6 @@
 from myconsts import *
 from dbcontrol import *
+from multilang import *
 import pickle
 
 def make_inline(inlist, text, callback_data):
@@ -10,7 +11,7 @@ def make_inline(inlist, text, callback_data):
 
 
 class MenuReturn:
-    def __init__(self, text, inline=[], event_addr=EVENT_ADDR_UNICAST, ext="", addr_list=[], lang="rus"):
+    def __init__(self, text="", inline=[], event_addr=EVENT_ADDR_UNICAST, ext="", addr_list=[], lang="rus"):
         #print "return text: ", text
         if lang=="eng":
             self.tr = tr_eng
@@ -33,6 +34,7 @@ class MenuReturn:
         self.addrs = addr_list
         if len(self.inline) > 0 and self.ext == "":
             self.ext = "---"
+        return self
 
     def txt(self, num):
       return self.inline[num]["text"]

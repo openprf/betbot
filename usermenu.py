@@ -5,7 +5,7 @@ from multilang import *
 class UserMenu:
     def __init__(self, chat_id, user_name, lang="rus"):
         self.db = BotDb(DB_PATH)
-        self.self.menuReturn.r = MenuReturn(lang=lang)
+        self.menuReturn = MenuReturn(lang=lang)
 
         try:  # load user infj from cache
             f = open("cache/%s.user" % chat_id, "rb")
@@ -40,7 +40,7 @@ class UserMenu:
     def _root_menu(self, data):
         if data == CMD_NEW_EVENT:
             self._set_state(STATE_ENTER_NEW_EVENT_NAME)
-            return self.self.menuReturn.r("Enter event name")
+            return self.menuReturn.r("Enter event name")
         elif data == "make_bet":
             self._set_state(STATE_SELECT_EVENT_FOR_BET)
             return self.menuReturn.r("Choose event for bet:", self._show_event_list(ALL_EVENTS))
