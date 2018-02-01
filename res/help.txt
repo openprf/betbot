@@ -1,0 +1,9 @@
+Commands
+"/cancel" canceled last comand (enter to main menu)
+"/newevent" create new event
+"/closeevent" close your event for bets
+"/playevent" choose win variant adn counts winners prises
+"/mybets" shows all your bets
+"/stop" stops enters variants of new event
+"/help" swos this text
+"/about" view project info

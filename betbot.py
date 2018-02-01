@@ -60,14 +60,13 @@ def send(user, info):
             bot.send_message(user.info.chat_id, info.ext, reply_markup=key_board)
 
 
-@bot.message_handler (commands=['/help'])
-def helpHandler(message):
-#    helptext="in develop"
-#    bot.send_message(message.chat.id, helptext, reply_markup=make_kayboard())
-    inline_kbd = types.InlineKeyboardMarkup()
-    btn = types.InlineKeyboardButton(text="inline test", callback_data="inline test data")
-    inline_kbd.add(btn)
-    bot.send_message(message.chat.id, "inline kbd", reply_markup=inline_kbd)
+# @bot.message_handler (commands=['/help'])
+# def helpHandler(message):
+#     f = open("res/help.txt", "r")
+#     helptext = f.read()
+#     f.close()
+#     bot.send_message(message.chat.id, helptext, reply_markup=make_kayboard())
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def callbackHandler(call):

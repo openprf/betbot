@@ -56,13 +56,27 @@ class UserMenu:
                 self._set_state(STATE_SELECT_EVENT_FOR_PLAY)
                 return self.menuReturn.r("Choose event for play:", make_inline(ev_list, "name", "code"))
             return self.menuReturn.r("No events for play")
+        elif data == CMD_HELP:
+            self._set_state(STATE_ROOT)
+            self.menuType = USER_MENU_TYPE_BASIC
+            f = open("res/help.txt", "r")
+            ftext = f.read()
+            f.close()
+            return self.menuReturn.r(ftext)
+        elif data == CMD_ABOUT:
+            self._set_state(STATE_ROOT)
+            self.menuType = USER_MENU_TYPE_BASIC
+            f = open("res/about.txt", "r")
+            ftext = f.read()
+            f.close()
+            return self.menuReturn.r(ftext)
         elif data == "info":
             self._set_state(STATE_ROOT)
-            self.menutype = USER_MENU_TYPE_BASIC
+            self.menuType = USER_MENU_TYPE_BASIC
             return self.menuReturn.r("your info in develop")
         elif data == "menu":
             self._set_state(STATE_ROOT)
-            self.menutype = USER_MENU_TYPE_BASIC
+            self.menuType = USER_MENU_TYPE_BASIC
             return self.menuReturn.r(self.tr("You are in main menu"))
         else:
             return self._proc_ev_for_bet(data)
