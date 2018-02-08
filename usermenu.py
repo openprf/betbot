@@ -12,6 +12,7 @@ class UserMenu:
             self.info = pickle.load(f)
             f.close()
         except IOError as e:  # or create new user info
+            log.info("new user cache file created")
             self.info = UserInfo(self.db.user_id, chat_id=chat_id, user_name=user_name)
 
         #init menu functions
@@ -116,6 +117,7 @@ class UserMenu:
             return ret_info
         except:
             self._set_state(STATE_ROOT)
+            log.error("Select variant exeption!")
             return self.menuReturn.r("Server problem #105")
 
     # ---------
@@ -204,9 +206,13 @@ class UserMenu:
     # public
 
     def save(self):
-        f = open("cache/%s.user" % self.info.chat_id, "wb")
-        pickle.dump(self.info, f)
-        f.close()
+        try:
+            f = open("cache/%s.user" % self.info.chat_id, "wb")
+            pickle.dump(self.info, f)
+            f.close()
+        except IOError as e:
+            syslog.error("Save user cache I/O error({0}): {1}".format(e.errno, e.strerror))
+
 
     def menutype(self):
         state = self.info.state
@@ -216,6 +222,7 @@ class UserMenu:
             return USER_MENU_TYPE_STOP_ENTER_VARS
         return USER_MENU_CANCEL
 
+
     def do(self, data):
         try:
             func = self.state_funcs[self.info.state]
@@ -223,7 +230,8 @@ class UserMenu:
                 return func(data)
             except AttributeError:
                 self._set_state(STATE_ROOT)
+                log.critical("Attribute error! state %d" % self.state.info.state)
                 return self.menuReturn.r("Server problem #101")
         except KeyError:
-            print "No sach key %d" % self.state.info.state
+            log.error("No sach key %d" % self.state.info.state)
             return self.menuReturn.r("Server problem #102")

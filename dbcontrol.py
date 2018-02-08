@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sqlite3
+from mylogging import *
 
 CREATE_DB_REQUEST_FILENAME = "res/botdb.init"
 
@@ -25,8 +26,12 @@ class BotEvent:
 
 class BotDb:
   def __init__(self, fname):
-    self.conn = sqlite3.connect(fname)
-    self.cursor = self.conn.cursor()
+    try:
+      self.conn = sqlite3.connect(fname)
+      self.cursor = self.conn.cursor()
+    except sqlite3.OperationalError as e:
+      log.critical(e)
+
 
 
   def __del__(self):
@@ -41,14 +46,21 @@ class BotDb:
 #private:
 
   def _read(self, req, args):
-    self.cursor.execute(req, args)
-    return self.cursor.fetchall()
+    try:
+      self.cursor.execute(req, args)
+      return self.cursor.fetchall()
+    except sqlite3.OperationalError as e:
+      log.error(e)
+      return []
 
 
   def _write(self, req, args):
-    self.cursor.execute(req, args)
-    self.cursor.fetchall()
-    self.conn.commit()
+    try:
+      self.cursor.execute(req, args)
+      self.cursor.fetchall()
+      self.conn.commit()
+    except sqlite3.OperationalError as e:
+      log.error(e)
 
 
   def _add_user(self, chat_id, user_name):
@@ -63,14 +75,17 @@ class BotDb:
   # ===================================================================
   # new interface
   def create_tables(self):
-    reqfile = open(CREATE_DB_REQUEST_FILENAME, 'r')
-    lines = reqfile.readlines()
-    reqfile.close()
-    for line in lines:
-      print line
-      self.cursor.execute(line)
-    self.cursor.fetchall()
-    self.conn.commit()
+    try:
+      reqfile = open(CREATE_DB_REQUEST_FILENAME, 'r')
+      lines = reqfile.readlines()
+      reqfile.close()
+      for line in lines:
+        print line
+        self.cursor.execute(line)
+      self.cursor.fetchall()
+      self.conn.commit()
+    except (IOError, sqlite3.OperationalError)  as e:
+      log.critical("Create database table FAIL!")
 
 
   def get_user_id(self, chat_id, user_name):
