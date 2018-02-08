@@ -59,29 +59,35 @@ class UserMenu:
             return self.menuReturn.r("No events for play")
         elif data == CMD_HELP:
             self._set_state(STATE_ROOT)
-            self.menuType = USER_MENU_TYPE_BASIC
-            f = open("res/help.txt", "r")
-            ftext = f.read()
-            f.close()
+           # self.menuType = USER_MENU_TYPE_BASIC
+            ftext = self.get_file_content("res/help.txt")
             return self.menuReturn.r(ftext)
         elif data == CMD_ABOUT:
             self._set_state(STATE_ROOT)
-            self.menuType = USER_MENU_TYPE_BASIC
-            f = open("res/about.txt", "r")
-            ftext = f.read()
-            f.close()
+           # self.menuType = USER_MENU_TYPE_BASIC
+            ftext = self.get_file_content("res/about.txt")
             return self.menuReturn.r(ftext)
         elif data == "info":
             self._set_state(STATE_ROOT)
-            self.menuType = USER_MENU_TYPE_BASIC
+           # self.menuType = USER_MENU_TYPE_BASIC
             return self.menuReturn.r("your info in develop")
         elif data == "menu":
             self._set_state(STATE_ROOT)
-            self.menuType = USER_MENU_TYPE_BASIC
+           # self.menuType = USER_MENU_TYPE_BASIC
             return self.menuReturn.r(self.tr("You are in main menu"))
         else:
             return self._proc_ev_for_bet(data)
         # ---------
+
+    def get_file_content(self, fname):
+        try:
+            f = open(fname, "r")
+            ftext = f.read()
+            f.close()
+            return ftext
+        except IOError as e:
+            log.error("get file {0} error: {1}".format(fname, e))
+            return"read file fail!"
 
     def _proc_ev_for_bet(self, data):
         self.info.event = self.db.load_event(data)
@@ -228,9 +234,9 @@ class UserMenu:
             func = self.state_funcs[self.info.state]
             try:
                 return func(data)
-            except AttributeError:
+            except AttributeError as e:
                 self._set_state(STATE_ROOT)
-                log.critical("Attribute error! state %d" % self.info.state)
+                log.critical("Attribute error ({0})! state {1} ".format(e, self.info.state))
                 return self.menuReturn.r("Server problem #101")
         except KeyError:
             log.error("No sach key %d" % self.info.state)
