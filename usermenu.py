@@ -230,8 +230,8 @@ class UserMenu:
                 return func(data)
             except AttributeError:
                 self._set_state(STATE_ROOT)
-                log.critical("Attribute error! state %d" % self.state.info.state)
+                log.critical("Attribute error! state %d" % self.info.state)
                 return self.menuReturn.r("Server problem #101")
         except KeyError:
-            log.error("No sach key %d" % self.state.info.state)
+            log.error("No sach key %d" % self.info.state)
             return self.menuReturn.r("Server problem #102")
