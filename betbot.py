@@ -55,7 +55,7 @@ def send(user, info):
             key_board = make_kayboard(user.menutype())
             bot.send_message(user.info.chat_id, info.text, reply_markup=key_board)
         else:
-            log.debug("inline menu len %d" % info.inline)
+            log.debug("inline menu len %d" % len(info.inline))
             inline_kbd = types.InlineKeyboardMarkup()
             for btn in info.inline:
                 btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
@@ -125,8 +125,8 @@ def process_msg(message):
 
         #отправка сообщений вместе с клавиатурой
         #bot.send_message(message.chat.id, message.text, reply_markup=kb1)
-    except:
-        log.error("Promlem with process_msg")
+    except AttributeError as e:
+        log.error("Promlem with process_msg (error {0})".format(e))
 
 if __name__ == '__main__':
     bot_init()
