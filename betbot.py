@@ -6,6 +6,8 @@ import telebot
 from telebot import types
 from usermenu import *
 from dbcontrol import *
+import time
+import exceptions
 
 
 bot = telebot.TeleBot(config.token)
@@ -53,17 +55,23 @@ def send(user, info):
         #process unicast messages
         if len(info.inline) == 0:
             key_board = make_kayboard(user.menutype())
+            log.debug("unicast no inline")
             bot.send_message(user.info.chat_id, info.text, reply_markup=key_board)
+            log.debug("Send no inline")
         else:
             log.debug("inline menu len %d" % len(info.inline))
             inline_kbd = types.InlineKeyboardMarkup()
             for btn in info.inline:
                 btn = types.InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
                 inline_kbd.add(btn)
+            log.debug("unicast inline")
+            #TODO solve problem wuth frezing in this place!
             bot.send_message(user.info.chat_id, info.text, reply_markup=inline_kbd)
+            log.debug("Send inline")
 
         if len(info.ext) > 0:
             bot.send_message(user.info.chat_id, info.ext, reply_markup=key_board)
+            log.debug("Send Ext")
 
 
 # @bot.message_handler (commands=['/help'])
@@ -103,9 +111,11 @@ def callbackHandler(call):
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def process_msg(message):
     try:
+        log.debug("Message: {0}".format(message.text))
         user = get_user(message.chat.id, message.from_user.username)
+        log.debug("user name: {0}".format(user.info.user_name))
         info = user.do(message.text)
-
+      #  log.debug("test: {0}".format(info.text))
         send(user, info)
 
         # key_board = make_kayboard(user.menutype())
@@ -128,6 +138,21 @@ def process_msg(message):
     except AttributeError as e:
         log.error("Promlem with process_msg (error {0})".format(e))
 
+#bot stop condition
+def isBotStop():
+    return 0;
+
 if __name__ == '__main__':
+    stop = isBotStop()
     bot_init()
-    bot.polling(none_stop=True)
+    while stop == 0:
+        print "start..."
+        try:
+            bot.polling(none_stop=True)
+            log.warning("bot polling exit.")
+        except Exception as e:
+            log.error("bot poling exeptions {0}".format(e))
+            time.speep(15)
+        log.info("Restart bot polling")
+        stop = isBotStop()
+    log.info("exit from bot")
